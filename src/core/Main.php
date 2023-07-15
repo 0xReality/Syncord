@@ -6,37 +6,36 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\event\Listener;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\TextFormat;
 
-class Main extends PluginBase implements Listener{
 
-    public function onEnable(): void
-    {
-        $this->getLogger()->notice("Plugin Core has been succefully initialized");
+class Main extends PluginBase implements Listener {
+
+    public function onEnable(): void {
+        $this->getLogger()->notice("Plugin Core has been successfully initialized");
     }
 
-    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
-    {
+    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
         $commandName = $command->getName();
         if ($commandName == "link") {
             if (isset($args[0])) {
-                //debuging purposes to be changed
+                // Debugging purposes to be changed
                 $this->getLogger()->notice("sending argument");
-                $this->sendToBot($args[0]);
+                $this->sendToBot($sender->getName(), $args[0], $sender);
                 $this->getLogger()->notice("argument sent");
-
-            } else {
-                $sender->sendMessage("Missing argument.");
+            } else {;
+                $sender->sendMessage(TextFormat::RED . "error missing args");
                 return false;
             }
         }
 
         return true;
     }
-    public function sendToBot($argument)
-    {
+
+    public function sendToBot($username, $argument, $sender) {
         // URL
-        $url = 'http://localhost:4007/execute-command';
-        $data = json_encode(['command' => $argument]);
+        $url = 'http://localhost:4015/execute-command';
+        $data = json_encode(['command' => $argument, 'username' => $username]);
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -53,31 +52,41 @@ class Main extends PluginBase implements Listener{
         }
 
         curl_close($ch);
-        $this->getLogger()->notice("Request sent to JavaScript bot.");
-
         $responseData = json_decode($result, true);
         if ($responseData && isset($responseData['foundUser'])) {
             $foundUser = $responseData['foundUser'];
-            //TODO: make a switch case
-            if ($foundUser === 1) {
-                $this->getLogger()->notice("User found by JavaScript bot.");
-                return true;
-            } elseif ($foundUser === 2) {
-                $this->getLogger()->notice("User not found by JavaScript bot.");
-                return false;
-            } else {
-                $this->getLogger()->error("Invalid response from JavaScript bot.");
-                return false;
+            switch ($foundUser) {
+                case 1:
+                    $sender->sendMessage(TextFormat::GREEN . "Successefully linked with Discord.");
+                    return true;
+                case 2:
+                    $sender->sendMessage(TextFormat::RED . "error userID dosn't exists");
+                    return false;
+                case 3:
+                    $sender->sendMessage(TextFormat::RED . "Join the discord first -> discord.gg/.");
+                    return false;
+                case 4:
+                    $this->getLogger()->error("Error: Channel you setup dosn't exist");
+                    return false;
+                case 5:
+                    $sender->sendMessage(TextFormat::RED . "Account already linked.");
+                    return false;
+                case 6:
+                    $this->getLogger()->notice("Error: id dosn't exist");
+                    return false;
+                case 7:
+                    $sender->sendMessage(TextFormat::RED . "Linking invitation has been declined.");
+                    return false;
+                case 8:
+                    $sender->sendMessage(TextFormat::RED . "Invitation has expired.");
+                    return false;
+                default:
+                    $this->getLogger()->error("Invalid response from JavaScript bot.");
+                    return false;
             }
         } else {
             $this->getLogger()->error("Invalid response from JavaScript bot.");
             return false;
         }
     }
-
-
-
-
-
-
 }
