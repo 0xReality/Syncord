@@ -43,3 +43,5 @@ For any questions or issues, please open an [issue](link-to-issues-page) on GitH
 
 Syncord is released under the [MIT License](LICENSE.md).
 
+Contact: Realities#7815
+
