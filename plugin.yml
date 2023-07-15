@@ -1,0 +1,21 @@
+name: syncord
+author: recurse
+version: 1.0.0
+api: 5.0.0
+main: core\Main
+
+commands:
+  discord:
+    usage: /discord
+    description: "Get the Discord of the server"
+    permission: discord.cmd
+  link:
+    usage: /link
+    description: "link discord account"
+    permission: link.cmd
+
+permissions:
+  discord.cmd:
+    default: true
+  link.cmd:
+      default: true
